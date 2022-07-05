@@ -13,8 +13,8 @@ type sourceOptions struct {
 	onMessageRelayFailed func(msg *nats.Msg)
 }
 
-// SourceOptOnSubscriptionReceived is a callback that is called when a subscription is received.
-func SourceOptOnSubscriptionReceived(fn func(msg *nats.Msg)) SourceOption {
+// SourceOptOnMessageReceived is a callback that is called when a subscription is received.
+func SourceOptOnMessageReceived(fn func(msg *nats.Msg)) SourceOption {
 	return func(opt *sourceOptions) {
 		opt.onMessageReceived = fn
 	}

@@ -20,36 +20,13 @@ var (
 	_ (Source) = (*MultipleSource)(nil)
 )
 
-type SourceOptFunc func(*sourceOpt)
-
-type sourceOpt struct {
-	// onSubscriptionReceived is called when a subscription is received.
-	onSubscriptionReceived func(msg *nats.Msg)
-	// onMessageRelayed is called when a message is relayed.
-	onMessageRelayed func(msg *nats.Msg)
-}
-
-// SourceOptOnSubscriptionReceived is a callback that is called when a subscription is received.
-func SourceOptOnSubscriptionReceived(fn func(msg *nats.Msg)) SourceOptFunc {
-	return func(opt *sourceOpt) {
-		opt.onSubscriptionReceived = fn
-	}
-}
-
-// SourceOptOnMessageRelayed is a callback that is called when a message is relayed.
-func SourceOptOnMessageRelayed(fn func(msg *nats.Msg)) SourceOptFunc {
-	return func(opt *sourceOpt) {
-		opt.onMessageRelayed = fn
-	}
-}
-
 type MultipleSource struct {
 	natsUrls []string
 	natsOpts []nats.Option
 	logger   *log.Logger
 	conns    []*nats.Conn
 	subs     []*nats.Subscription
-	opts     *sourceOpt
+	opts     *sourceOptions
 }
 
 func (s *MultipleSource) Open() error {
@@ -107,35 +84,31 @@ func (s *MultipleSource) Close() error {
 
 func (s *MultipleSource) createSubscribeHandler(prefixSize int, dist *distribute) nats.MsgHandler {
 	return func(msg *nats.Msg) {
-		// call the callback for on subscription received. this will allow users to plugin metrics if they desire.
-		s.opts.onSubscriptionReceived(msg)
+		s.opts.OnMessageReceived(msg)
 
 		if 0 < prefixSize {
 			if ok := dist.Publish(msg.Subject[0:prefixSize], msg); ok != true {
 				s.logger.Printf("warn: failed to publish: %s", msg.Subject)
+				s.opts.OnMessageRelayFailed(msg)
 				return
 			}
 
-			if s.opts.onMessageRelayed != nil {
-				s.opts.onMessageRelayed(msg)
-			}
-
+			s.opts.OnMessageRelayed(msg)
 			return
 		}
 
 		if ok := dist.Publish(msg.Subject, msg); ok != true {
 			s.logger.Printf("warn: failed to publish: %s", msg.Subject)
+			s.opts.OnMessageRelayFailed(msg)
 			return
 		}
 
-		if s.opts.onMessageRelayed != nil {
-			s.opts.onMessageRelayed(msg)
-		}
+		s.opts.OnMessageRelayed(msg)
 	}
 }
 
-func NewMultipleSource(urls []string, sourceOpts []SourceOptFunc, natsOpts []nats.Option, logger *log.Logger) *MultipleSource {
-	opts := &sourceOpt{}
+func NewMultipleSource(urls []string, sourceOpts []SourceOption, natsOpts []nats.Option, logger *log.Logger) *MultipleSource {
+	opts := &sourceOptions{}
 	for _, o := range sourceOpts {
 		o(opts)
 	}

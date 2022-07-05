@@ -19,7 +19,7 @@ type serverOpt struct {
 	relayConf  RelayConfig
 	executor   *chanque.Executor
 	logger     *log.Logger
-	sourceOpts []SourceOptFunc
+	sourceOpts []SourceOption
 	natsOpts   []nats.Option
 }
 
@@ -41,7 +41,7 @@ func ServerOptLogger(logger *log.Logger) ServerOptFunc {
 	}
 }
 
-func ServerOptSourceOptions(sourceOpts ...SourceOptFunc) ServerOptFunc {
+func ServerOptSourceOptions(sourceOpts ...SourceOption) ServerOptFunc {
 	return func(opt *serverOpt) {
 		opt.sourceOpts = sourceOpts
 	}

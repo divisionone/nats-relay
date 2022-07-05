@@ -16,10 +16,11 @@ type Server interface {
 type ServerOptFunc func(*serverOpt)
 
 type serverOpt struct {
-	relayConf RelayConfig
-	executor  *chanque.Executor
-	logger    *log.Logger
-	natsOpts  []nats.Option
+	relayConf  RelayConfig
+	executor   *chanque.Executor
+	logger     *log.Logger
+	sourceOpts []SourceOptFunc
+	natsOpts   []nats.Option
 }
 
 func ServerOptRelayConfig(conf RelayConfig) ServerOptFunc {
@@ -37,6 +38,12 @@ func ServerOptExecutor(executor *chanque.Executor) ServerOptFunc {
 func ServerOptLogger(logger *log.Logger) ServerOptFunc {
 	return func(opt *serverOpt) {
 		opt.logger = logger
+	}
+}
+
+func ServerOptSourceOptions(sourceOpts ...SourceOptFunc) ServerOptFunc {
+	return func(opt *serverOpt) {
+		opt.sourceOpts = sourceOpts
 	}
 }
 
@@ -64,7 +71,7 @@ func (s *DefaultServer) Run(ctx context.Context) error {
 
 	relays := make([]Relay, 0, len(s.opt.relayConf.Topics)*len(sourceNatsUrls))
 	for topic, conf := range s.opt.relayConf.Topics {
-		src := NewMultipleSource(sourceNatsUrls, s.opt.natsOpts, s.opt.logger)
+		src := NewMultipleSource(sourceNatsUrls, s.opt.sourceOpts, s.opt.natsOpts, s.opt.logger)
 		dst := NewSingleDestination(s.opt.executor, s.opt.relayConf.NatsUrl, s.opt.natsOpts, s.opt.logger)
 		relay := NewMultipleSourceSingleDestinationRelay(topic, src, dst, conf.PrefixSize, conf.WorkerNum, s.opt.logger)
 		relays = append(relays, relay)

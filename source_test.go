@@ -96,7 +96,7 @@ func TestMultipleSource(t *testing.T) {
 
 		topicPrefix := "test.source"
 		lg := log.New(&testDestinationLogWriter{tt}, tt.Name()+"@", log.LstdFlags)
-		src := NewMultipleSource(urls, nil, lg)
+		src := NewMultipleSource(urls, nil, nil, lg)
 		if err := src.Open(); err != nil {
 			tt.Errorf("must no error")
 		}

@@ -1,3 +1,10 @@
+# divisionone
+
+This divisionone repo is a fork of [https://github.com/octu0/nats-relay](https://github.com/octu0/nats-relay)
+
+The changes are as follows:
+ - add options to allow callback funcs when relaying a message
+
 # nats-relay
 
 [![Apache License](https://img.shields.io/github/license/octu0/nats-relay)](https://github.com/octu0/nats-relay/blob/master/LICENSE)

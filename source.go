@@ -26,6 +26,7 @@ type MultipleSource struct {
 	logger   *log.Logger
 	conns    []*nats.Conn
 	subs     []*nats.Subscription
+	opts     *sourceOptions
 }
 
 func (s *MultipleSource) Open() error {
@@ -83,20 +84,34 @@ func (s *MultipleSource) Close() error {
 
 func (s *MultipleSource) createSubscribeHandler(prefixSize int, dist *distribute) nats.MsgHandler {
 	return func(msg *nats.Msg) {
+		s.opts.OnMessageReceived(msg)
+
 		if 0 < prefixSize {
 			if ok := dist.Publish(msg.Subject[0:prefixSize], msg); ok != true {
 				s.logger.Printf("warn: failed to publish: %s", msg.Subject)
+				s.opts.OnMessageRelayFailed(msg)
+				return
 			}
+
+			s.opts.OnMessageRelayed(msg)
 			return
 		}
 
 		if ok := dist.Publish(msg.Subject, msg); ok != true {
 			s.logger.Printf("warn: failed to publish: %s", msg.Subject)
+			s.opts.OnMessageRelayFailed(msg)
+			return
 		}
-		return
+
+		s.opts.OnMessageRelayed(msg)
 	}
 }
 
-func NewMultipleSource(urls []string, natsOpts []nats.Option, logger *log.Logger) *MultipleSource {
-	return &MultipleSource{urls, natsOpts, logger, nil, nil}
+func NewMultipleSource(urls []string, sourceOpts []SourceOption, natsOpts []nats.Option, logger *log.Logger) *MultipleSource {
+	opts := &sourceOptions{}
+	for _, o := range sourceOpts {
+		o(opts)
+	}
+
+	return &MultipleSource{urls, natsOpts, logger, nil, nil, opts}
 }

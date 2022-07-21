@@ -20,8 +20,9 @@ type RelayConfig struct {
 }
 
 type RelayClientConfig struct {
-	WorkerNum  int `yaml:"worker"`
-	PrefixSize int `yaml:"prefix"`
+	WorkerNum  int    `yaml:"worker"`
+	PrefixSize int    `yaml:"prefix"`
+	Queue      string `yaml:"queue"`
 }
 
 func Topics(topics ...*topicNameOptionTuple) map[string]RelayClientConfig {
@@ -66,5 +67,11 @@ func WorkerNum(num int) topicOptionFunc {
 func PrefixSize(size int) topicOptionFunc {
 	return func(opt *RelayClientConfig) {
 		opt.PrefixSize = size
+	}
+}
+
+func Queue(name string) topicOptionFunc {
+	return func(opt *RelayClientConfig) {
+		opt.Queue = name
 	}
 }

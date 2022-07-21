@@ -73,7 +73,7 @@ func (s *DefaultServer) Run(ctx context.Context) error {
 	for topic, conf := range s.opt.relayConf.Topics {
 		src := NewMultipleSource(sourceNatsUrls, s.opt.sourceOptions, s.opt.natsOpts, s.opt.logger)
 		dst := NewSingleDestination(s.opt.executor, s.opt.relayConf.NatsUrl, s.opt.natsOpts, s.opt.logger)
-		relay := NewMultipleSourceSingleDestinationRelay(topic, src, dst, conf.PrefixSize, conf.WorkerNum, s.opt.logger)
+		relay := NewMultipleSourceSingleDestinationRelay(topic, conf.Queue, src, dst, conf.PrefixSize, conf.WorkerNum, s.opt.logger)
 		relays = append(relays, relay)
 	}
 

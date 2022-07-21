@@ -39,7 +39,7 @@ func (s *testMultipleSourceSingleDestinationRelay_SourceWithError) Close() error
 	return nil
 }
 
-func (s *testMultipleSourceSingleDestinationRelay_SourceWithError) Subscribe(t string, p int, ws []chanque.Worker) error {
+func (s *testMultipleSourceSingleDestinationRelay_SourceWithError) Subscribe(t, q string, p int, ws []chanque.Worker) error {
 	if s.errType == testSourceErrorSubscribe {
 		return errors.New("errSrcSubscribe")
 	}
@@ -137,7 +137,7 @@ func TestMultipleRelayError(t *testing.T) {
 			cancel() // no block
 
 			lg := log.New(&testRelayLogWriter{tt}, c.name+"@", log.LstdFlags)
-			r := NewMultipleSourceSingleDestinationRelay("test.topic."+c.name, c.src, c.dst, 0, 0, lg)
+			r := NewMultipleSourceSingleDestinationRelay("test.topic."+c.name, "", c.src, c.dst, 0, 0, lg)
 			err := r.Run(ctx)
 			if err != nil {
 				if err.Error() != c.expectErr {
@@ -159,7 +159,7 @@ func TestMultipleRelayError(t *testing.T) {
 			<-time.After(10 * time.Millisecond)
 			cancel()
 		}()
-		r := NewMultipleSourceSingleDestinationRelay("test.topic."+tt.Name(), src, dst, 0, 0, lg)
+		r := NewMultipleSourceSingleDestinationRelay("test.topic."+tt.Name(), "", src, dst, 0, 0, lg)
 		err := r.Run(ctx)
 		if err != nil {
 			tt.Errorf("context cancel no error")
@@ -179,7 +179,7 @@ func TestMultipleRelayRun(t *testing.T) {
 			cancel()
 		}()
 		start := time.Now()
-		r := NewMultipleSourceSingleDestinationRelay("test.topic."+tt.Name(), src, dst, 0, 0, lg)
+		r := NewMultipleSourceSingleDestinationRelay("test.topic."+tt.Name(), "", src, dst, 0, 0, lg)
 		r.Run(ctx)
 		if time.Since(start) < (10 * time.Millisecond) {
 			tt.Errorf("Run wait context.Done()")

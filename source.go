@@ -11,7 +11,7 @@ import (
 type Source interface {
 	Open() error
 	Close() error
-	Subscribe(topic string, prefixSize int, workers []chanque.Worker) error
+	Subscribe(topic string, queue string, prefixSize int, workers []chanque.Worker) error
 	Unsubscribe() error
 }
 
@@ -44,11 +44,11 @@ func (s *MultipleSource) Open() error {
 	return nil
 }
 
-func (s *MultipleSource) Subscribe(topic string, prefixSize int, workers []chanque.Worker) error {
+func (s *MultipleSource) Subscribe(topic string, queue string, prefixSize int, workers []chanque.Worker) error {
 	dist := newDistribute(workers)
 	subs := make([]*nats.Subscription, len(s.conns))
 	for i, conn := range s.conns {
-		sub, err := conn.QueueSubscribe(topic, s.opts.subscribeQueue, s.createSubscribeHandler(prefixSize, dist))
+		sub, err := conn.QueueSubscribe(topic, queue, s.createSubscribeHandler(prefixSize, dist))
 		if err != nil {
 			return errors.WithStack(err)
 		}

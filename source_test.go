@@ -100,7 +100,7 @@ func TestMultipleSource(t *testing.T) {
 		if err := src.Open(); err != nil {
 			tt.Errorf("must no error")
 		}
-		if err := src.Subscribe(topicPrefix+".>", len(topicPrefix)+2, cw); err != nil {
+		if err := src.Subscribe(topicPrefix+".>", "", len(topicPrefix)+2, cw); err != nil {
 			tt.Errorf("must no error")
 		}
 

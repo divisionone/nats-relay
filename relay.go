@@ -18,6 +18,7 @@ var (
 
 type MultipleSourceSingleDestinationRelay struct {
 	topic      string
+	queue      string
 	src        Source
 	dst        Destination
 	prefixSize int
@@ -34,7 +35,7 @@ func (r *MultipleSourceSingleDestinationRelay) Run(ctx context.Context) error {
 		return errors.WithStack(err)
 	}
 
-	if err := r.src.Subscribe(r.topic, r.prefixSize, r.dst.Workers()); err != nil {
+	if err := r.src.Subscribe(r.topic, r.queue, r.prefixSize, r.dst.Workers()); err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -54,6 +55,6 @@ func (r *MultipleSourceSingleDestinationRelay) Run(ctx context.Context) error {
 	return nil
 }
 
-func NewMultipleSourceSingleDestinationRelay(topic string, src Source, dst Destination, prefix, num int, logger *log.Logger) *MultipleSourceSingleDestinationRelay {
-	return &MultipleSourceSingleDestinationRelay{topic, src, dst, prefix, num, logger}
+func NewMultipleSourceSingleDestinationRelay(topic, queue string, src Source, dst Destination, prefix, num int, logger *log.Logger) *MultipleSourceSingleDestinationRelay {
+	return &MultipleSourceSingleDestinationRelay{topic, queue, src, dst, prefix, num, logger}
 }

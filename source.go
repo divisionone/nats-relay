@@ -48,10 +48,22 @@ func (s *MultipleSource) Subscribe(topic string, queue string, prefixSize int, w
 	dist := newDistribute(workers)
 	subs := make([]*nats.Subscription, len(s.conns))
 	for i, conn := range s.conns {
-		sub, err := conn.QueueSubscribe(topic, queue, s.createSubscribeHandler(prefixSize, dist))
+		var (
+			sub *nats.Subscription
+			err error
+		)
+
+		switch queue {
+		case "":
+			sub, err = conn.Subscribe(topic, s.createSubscribeHandler(prefixSize, dist))
+		default:
+			sub, err = conn.QueueSubscribe(topic, queue, s.createSubscribeHandler(prefixSize, dist))
+		}
+
 		if err != nil {
 			return errors.WithStack(err)
 		}
+
 		subs[i] = sub
 	}
 	for _, conn := range s.conns {

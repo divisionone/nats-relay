@@ -48,7 +48,7 @@ func (s *MultipleSource) Subscribe(topic string, prefixSize int, workers []chanq
 	dist := newDistribute(workers)
 	subs := make([]*nats.Subscription, len(s.conns))
 	for i, conn := range s.conns {
-		sub, err := conn.Subscribe(topic, s.createSubscribeHandler(prefixSize, dist))
+		sub, err := conn.QueueSubscribe(topic, s.opts.subscribeQueue, s.createSubscribeHandler(prefixSize, dist))
 		if err != nil {
 			return errors.WithStack(err)
 		}

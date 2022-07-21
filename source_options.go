@@ -11,6 +11,8 @@ type sourceOptions struct {
 	onMessageRelayed func(msg *nats.Msg)
 	// onMessageRelayFailed is called when a message is failed to relay.
 	onMessageRelayFailed func(msg *nats.Msg)
+	// subscribeQueue is an optional queue to use when subscribing.
+	subscribeQueue string
 }
 
 // SourceOptOnMessageReceived is a callback that is called when a subscription is received.
@@ -31,6 +33,13 @@ func SourceOptOnMessageRelayed(fn func(msg *nats.Msg)) SourceOption {
 func SourceOptOnMessageRelayFailed(fn func(msg *nats.Msg)) SourceOption {
 	return func(opt *sourceOptions) {
 		opt.onMessageRelayFailed = fn
+	}
+}
+
+// SourceOptSubscribeQueue is an optional queue to use when subscribing.
+func SourceOptSubscribeQueue(queue string) SourceOption {
+	return func(opt *sourceOptions) {
+		opt.subscribeQueue = queue
 	}
 }
 
